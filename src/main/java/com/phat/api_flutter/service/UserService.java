@@ -5,7 +5,6 @@ import com.phat.api_flutter.models.User;
 import com.phat.api_flutter.repository.TokenRepository;
 import com.phat.api_flutter.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +18,7 @@ public class UserService {
 
     private TokenRepository tokenRepository;
 
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -71,11 +69,4 @@ public class UserService {
         return tokenRepository.save(token);
     }
 
-    public Token findTokenByUserId(String userId) {
-        return tokenRepository.findByUserId(userId);
-    }
-
-    public Token findTokenByAccessToken(String accessToken) {
-        return tokenRepository.findByAccessToken(accessToken);
-    }
 }

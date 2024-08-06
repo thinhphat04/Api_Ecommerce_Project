@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "product")
+@Document(collection = "products")
 public class Product {
 
     @Id
@@ -29,16 +29,17 @@ public class Product {
 
     @DBRef
     private List<Review> reviews;
-
     private int numberOfReviews = 0;
     private List<String> sizes;
 
     @DBRef
     private Category category;
 
-    private String genderAgeCategory;
+    private GenderAgeCategory genderAgeCategory;
     private int countInStock;
     private Date dateAdded = new Date();
 
-
+    public enum GenderAgeCategory {
+        MEN, WOMEN, UNISEX, KIDS
+    }
 }
