@@ -1,5 +1,7 @@
 package com.phat.api_flutter.models;
 
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,7 +29,7 @@ public class Product {
     private String image;
     private List<String> images;
 
-    @DBRef
+    @OneToMany(fetch = FetchType.LAZY)
     private List<Review> reviews;
     private int numberOfReviews = 0;
     private List<String> sizes;
