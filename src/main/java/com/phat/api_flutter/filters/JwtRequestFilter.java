@@ -1,5 +1,4 @@
-package com.phat.api_flutter.service;
-
+package com.phat.api_flutter.filters;
 
 import com.phat.api_flutter.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +19,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-public class JwtAuthFilter extends OncePerRequestFilter {
-
-    @Autowired
-    private JwtUtil jwtUtil;
+public class JwtRequestFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -45,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             } catch (ExpiredJwtException e) {
                 System.out.println("JWT Token has expired");
             } catch (SignatureException e) {
-                System.out.println("Invalid JWT Signature");
+                System.out.println("JWT signature does not match locally computed signature");
             }
         } else {
             logger.warn("JWT Token does not begin with Bearer String");
@@ -57,7 +56,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                usernamePasswordAuthenticationToken
+                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }

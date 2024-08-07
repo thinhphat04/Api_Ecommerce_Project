@@ -7,7 +7,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 import java.util.List;
 import java.util.Date;
 
@@ -15,6 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "user")
+
 public class User {
 
     @Id
@@ -50,6 +50,12 @@ public class User {
 
     @DBRef
     private List<CartProduct> cart;
+
+    @DBRef
+    private List<WishlistItem> wishlist;
+
+
+
 
 
 }
