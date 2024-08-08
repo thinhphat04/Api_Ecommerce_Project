@@ -1,58 +1,95 @@
 package com.phat.api_flutter.service;
 
+import com.phat.api_flutter.dto.ProductDto;
 import com.phat.api_flutter.models.Product;
 import com.phat.api_flutter.repository.ProductRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class ProductService {
+public class ProductService{
 
     @Autowired
     private ProductRepository productRepository;
 
-    public Page<Product> getProducts(Optional<String> criteria, Optional<String> category, int page, int pageSize) {
+
+    public Page<ProductDto> getProducts(Optional<String> criteria, Optional<String> category, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Page<Product> productPage;
+
+        // Convert category string to ObjectId
+        Optional<ObjectId> categoryId = category.map(ObjectId::new);
 
         if (criteria.isPresent()) {
             String crit = criteria.get();
-            if (crit.equals("newArrivals")) {
-                Date twoWeeksAgo = new Date(System.currentTimeMillis() - 140 * 24 * 60 * 60 * 1000L);
-                if (category.isPresent()) {
-                    return productRepository.findByCategoryAndDateAddedAfter(category.get(), twoWeeksAgo, pageable);
+            if ("newArrivals".equals(crit)) {
+                Date twoWeeksAgo = new Date(System.currentTimeMillis() - 14 * 24 * 60 * 60 * 1000L);
+                if (categoryId.isPresent()) {
+                    productPage = productRepository.findByCategoryAndDateAddedAfter(categoryId.get(), twoWeeksAgo, pageable);
                 } else {
-                    return productRepository.findByDateAddedAfter(twoWeeksAgo, pageable);
+                    productPage = productRepository.findByDateAddedAfter(twoWeeksAgo, pageable);
                 }
-            } else if (crit.equals("popular")) {
-                return productRepository.findByRatingGreaterThanEqual(4.5, pageable);
+            } else if ("popular".equals(crit)) {
+                productPage = productRepository.findByRatingGreaterThanEqual(4.5, pageable);
+            } else {
+                productPage = productRepository.findAll(pageable);
             }
-        } else if (category.isPresent()) {
-            return productRepository.findByCategory(category.get(), pageable);
+        } else if (categoryId.isPresent()) {
+            productPage = productRepository.findByCategory(categoryId.get(), pageable);
+        } else {
+            productPage = productRepository.findAll(pageable);
         }
 
-        return productRepository.findAll(pageable);
+        // Convert Page<Product> to Page<ProductDto>
+        List<ProductDto> productDtos = productPage.getContent().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(productDtos, pageable, productPage.getTotalElements());
     }
 
-    public Optional<Product> getProductById(String id) {
+    private ProductDto convertToDto(Product product) {
+        return new ProductDto(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getRating(),
+                product.getColours(),
+                product.getImage(),
+                product.getNumberOfReviews(),
+                product.getCategory(),
+                product.getGenderAgeCategory(),
+                product.getCountInStock(),
+                product.getDateAdded()
+        );
+    }
+
+
+    public Optional<Product> getProductById(ObjectId id) {
         return productRepository.findById(id);
     }
 
-    public Page<Product> searchProducts(String searchTerm, Optional<String> category, Optional<String> genderAgeCategory, int page, int pageSize) {
-        Pageable pageable = PageRequest.of(page - 1, pageSize);
-
-        if (category.isPresent() && genderAgeCategory.isPresent()) {
-            return productRepository.findByCategoryAndGenderAgeCategoryAndNameContainingIgnoreCase(
-                    category.get(), genderAgeCategory.get(), searchTerm, pageable);
-        } else if (category.isPresent()) {
-            return productRepository.findByCategoryAndNameContainingIgnoreCase(category.get(), searchTerm, pageable);
-        } else {
-            return productRepository.findByNameContainingIgnoreCase(searchTerm, pageable);
-        }
-    }
+//    public Page<Product> searchProducts(String searchTerm, Optional<String> category, Optional<String> genderAgeCategory, int page, int pageSize) {
+//        Pageable pageable = PageRequest.of(page - 1, pageSize);
+//
+//        if (category.isPresent() && genderAgeCategory.isPresent()) {
+//            return productRepository.findByCategoryAndGenderAgeCategoryAndNameContainingIgnoreCase(
+//                    category.get(), genderAgeCategory.get(), searchTerm, pageable);
+//        } else if (category.isPresent()) {
+//            return productRepository.findByCategoryAndNameContainingIgnoreCase(category.get(), searchTerm, pageable);
+//        } else {
+//            return productRepository.findByNameContainingIgnoreCase(searchTerm, pageable);
+//        }
+//    }
 }

@@ -1,9 +1,10 @@
 package com.phat.api_flutter.repository;
 
-import com.phat.api_flutter.models.Review;
+import com.phat.api_flutter.models.Category;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ReviewRepository extends MongoRepository<Review, Object> {
+public interface CategoryRepository extends MongoRepository<Category, ObjectId> {
 }
