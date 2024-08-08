@@ -2,7 +2,6 @@ package com.phat.api_flutter.service;
 
 import com.phat.api_flutter.models.Category;
 import com.phat.api_flutter.repository.CategoryRepository;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +17,7 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
-    public Optional<Category> getCategoryById(ObjectId id) {
+    public Optional<Category> getCategoryById(String id) {
         return categoryRepository.findById(id);
     }
 }

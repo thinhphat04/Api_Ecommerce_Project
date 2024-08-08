@@ -1,6 +1,5 @@
 package com.phat.api_flutter.config;
 
-import com.phat.api_flutter.converters.ObjectIdToReviewConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -15,15 +14,13 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        return "DBecomly";
+        return "ABCD";
     }
+
 
     @Bean
     public MongoCustomConversions customConversions() {
         List<Converter<?, ?>> converters = new ArrayList<>();
-        converters.add(new ObjectIdToReviewConverter()); // Temporarily pass null for testing
         return new MongoCustomConversions(converters);
     }
-
-    // Implement other necessary methods
 }
