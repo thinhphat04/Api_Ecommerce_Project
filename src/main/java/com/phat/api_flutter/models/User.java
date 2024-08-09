@@ -13,14 +13,16 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "user")
+//@Document(collection = "user")
+
+@Document(collection = "users")
 
 public class User {
 
     @Id
     private String id;
 
-    private String name;
+    private String username;
 
     //tránh bị trùng lặp mail khi đăng ký
     @Indexed(unique = true)
@@ -42,8 +44,9 @@ public class User {
 
     private String phone;
 
-    private boolean isAdmin;
+//    private boolean isAdmin;
 
+    private String roles;
     private Integer resetPasswordOtp;
 
     private Date resetPasswordOtpExpires;

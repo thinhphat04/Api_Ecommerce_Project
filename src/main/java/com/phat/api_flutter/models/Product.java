@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -16,8 +18,8 @@ import java.util.List;
 @Document(collection = "products")
 public class Product {
 
-    @Id
-    private String id;
+    @MongoId
+    private String _id;
 
     private String name;
     private String description;
@@ -37,7 +39,9 @@ public class Product {
 
     private GenderAgeCategory genderAgeCategory;
     private int countInStock;
-    private Date dateAdded = new Date();
+    private LocalDateTime dateAdded ;
+
+    private int __v;
 
     public enum GenderAgeCategory {
         MEN, WOMEN, UNISEX, KIDS

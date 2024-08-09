@@ -1,13 +1,14 @@
 package com.phat.api_flutter.dto;
 
-import lombok.AllArgsConstructor;
+
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class AuthenticationResponse {
     private String accessToken;
-    private String refreshToken;
+    private String tokenType = "Bearer";
+
+    public AuthenticationResponse(String accessToken) {
+        this.accessToken = accessToken;
+    }
 }

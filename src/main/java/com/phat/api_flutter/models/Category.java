@@ -5,15 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
+
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "category")
+@Document(collection = "categories")
 public class Category {
 
-    @Id
-    private String id;
+    @MongoId
+    private String _id;
 
     private String name;
 
@@ -22,4 +24,6 @@ public class Category {
     private String image;
 
     private boolean markedForDeletion = false;
+
+    private int __v;
 }

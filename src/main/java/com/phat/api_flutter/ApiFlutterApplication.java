@@ -12,9 +12,4 @@ public class ApiFlutterApplication {
         SpringApplication.run(ApiFlutterApplication.class, args);
     }
 
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
 }
