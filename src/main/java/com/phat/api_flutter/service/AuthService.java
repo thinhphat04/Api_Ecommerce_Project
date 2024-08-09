@@ -24,12 +24,21 @@ public class AuthService implements UserDetailsService {
     }
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User userDetail = userRepository.findUserByUsername(username);
+        User userDetail = userRepository.findUserByName(username);
         if (userDetail == null) {
-            throw new UsernameNotFoundException("User not found: " + username);
+            throw new UsernameNotFoundException("User name not found: " + username);
         }
          // Chuyển đổi từ User thành CustomUser
         return new CustomUser(userDetail);
+    }
+
+    public User loadUserByEmail(String email) throws UsernameNotFoundException {
+        User userDetail = userRepository.findUserByEmail(email);
+        if (userDetail == null) {
+            throw new UsernameNotFoundException("User email not found: " + email);
+        }
+        // Chuyển đổi từ User thành CustomUser
+        return userDetail;
     }
 
 

@@ -24,6 +24,4 @@ public class Category {
     private String image;
 
     private boolean markedForDeletion = false;
-
-    private int __v;
 }

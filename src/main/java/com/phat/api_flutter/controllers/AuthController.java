@@ -2,13 +2,18 @@ package com.phat.api_flutter.controllers;
 
 import com.phat.api_flutter.dto.AuthenticationRequest;
 import com.phat.api_flutter.dto.AuthenticationResponse;
+import com.phat.api_flutter.models.Token;
+import com.phat.api_flutter.repository.TokenRepository;
 import com.phat.api_flutter.service.AuthService;
 import com.phat.api_flutter.service.JwtService;
 import com.phat.api_flutter.models.CustomUser;
 import com.phat.api_flutter.models.User;
 import com.phat.api_flutter.service.UserService;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,63 +23,96 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Date;
+
 @RestController
 @RequestMapping("/api/v1")
 public class AuthController {
 
-    @Autowired
     private UserService userService;
-
-    @Autowired
+    private TokenRepository tokenRepository;
     private AuthService authService;
-    @Autowired
     AuthenticationManager authenticationManager;
+    private BCryptPasswordEncoder passwordEncoder;
+    private JwtService jwtService;
+
+    @Value("${ACCESS_TOKEN_SECRET}")
+    private String ACCESS_TOKEN_SECRET;
+
+    @Value("${REFRESH_TOKEN_SECRET}")
+    private String REFRESH_TOKEN_SECRET;
 
     @Autowired
-    private JwtService jwtService;
+    public AuthController(UserService userService, TokenRepository tokenRepository, AuthService authService, AuthenticationManager authenticationManager, BCryptPasswordEncoder passwordEncoder, JwtService jwtService) {
+        this.userService = userService;
+        this.tokenRepository = tokenRepository;
+        this.authService = authService;
+        this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity authenticateUser(@Valid @RequestBody AuthenticationRequest loginRequest) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-            );
+            String email = loginRequest.getEmail();
+            String password = loginRequest.getPassword();
 
-            if (authentication.isAuthenticated()) {
-                String token = jwtService.generateToken(loginRequest.getUsername());
-                return ResponseEntity.ok(new AuthenticationResponse(token));
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            User userOptional = authService.loadUserByEmail(email);
+            if (userOptional == null) {
+                return ResponseEntity.status(404).body("User not found! Check your email and try again.");
             }
-        } catch (BadCredentialsException e) {
-            // Xử lý khi thông tin đăng nhập không hợp lệ
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        } catch (DisabledException e) {
-            // Xử lý khi tài khoản bị vô hiệu hóa
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Account is disabled");
-        } catch (UsernameNotFoundException e) {
-            // Xử lý khi không tìm thấy người dùng
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        } catch (Exception e) {
-            // Xử lý các lỗi khác
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-        }
 
+            User user = userOptional;
+            if (passwordEncoder.matches(password, user.getPasswordHash())) {
+                String accessToken = Jwts.builder()
+                        .setSubject(user.getName())
+                        .claim("ROLE", user.getRoles())
+                        .setIssuedAt(new Date())
+                        .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 24 hours
+                        .signWith(SignatureAlgorithm.HS256, ACCESS_TOKEN_SECRET)
+                        .compact();
+
+                String refreshToken = Jwts.builder()
+                        .setSubject(user.getName())
+                        .claim("ROLE", user.getRoles())
+                        .setIssuedAt(new Date())
+                        .setExpiration(new Date(System.currentTimeMillis() + 5184000000L)) // 60 days
+                        .signWith(SignatureAlgorithm.HS256, REFRESH_TOKEN_SECRET)
+                        .compact();
+
+                tokenRepository.deleteByUserId(user.getName());
+                tokenRepository.save(new Token(user.getName(), accessToken, refreshToken));
+
+                user.setPasswordHash(null); // Exclude the password hash
+                return ResponseEntity.ok(new AuthenticationResponse(user, accessToken, refreshToken));
+            }
+
+            return ResponseEntity.status(400).body("Incorrect password!");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
     }
+
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthenticationRequest authenticationRequest) {
-       User existingUser = userService.findByEmail(authenticationRequest.getUsername());
+       User existingUser = userService.findByEmail(authenticationRequest.getEmail());
         if (existingUser != null) {
             return ResponseEntity.status(409).body("Email already exists");
         }
 
         User user = new User();
-        user.setUsername(authenticationRequest.getUsername());
+        user.setName(authenticationRequest.getName());
+        user.setEmail(authenticationRequest.getEmail());
         user.setPasswordHash(authenticationRequest.getPassword());
         User savedUser = authService.addUser(user);
         return ResponseEntity.ok(savedUser);

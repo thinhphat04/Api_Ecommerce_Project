@@ -22,7 +22,7 @@ public class User {
     @Id
     private String id;
 
-    private String username;
+    private String name;
 
     //tránh bị trùng lặp mail khi đăng ký
     @Indexed(unique = true)

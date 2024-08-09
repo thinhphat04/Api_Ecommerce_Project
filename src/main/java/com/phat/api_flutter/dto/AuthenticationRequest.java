@@ -10,7 +10,9 @@ public class AuthenticationRequest {
 //    Day la cua Phat
 //    private String username;
     @NotBlank
-    private String username;
+    private String email;
+
+    private String name;
     @NotBlank
     private String password;
 }

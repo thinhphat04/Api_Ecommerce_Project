@@ -1,16 +1,12 @@
 package com.phat.api_flutter.models;
 
 import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
-
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Document(collection = "token")
 public class Token {
 
@@ -20,4 +16,10 @@ public class Token {
     private String refreshToken;
     private String accessToken;
     private Date createdAt = new Date();
+
+    public Token(String id, String accessToken, String refreshToken) {
+        this.id = id;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+    }
 }

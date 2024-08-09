@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JwtService {
-    @Value("${jwt.secret}")
+    @Value("${ACCESS_TOKEN_SECRET}")
     private String SECRET;
 
     public String generateToken(String userName) {
