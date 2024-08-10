@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface ProductService {
     Page<ProductDto> getProducts(Optional<String> criteria, Optional<String> category, int page, int pageSize);
     Optional<Product> getProductById(String id);
+    Page<Product> searchProducts(String searchTerm, Optional<String> category, Optional<String> genderAgeCategory, int page, int pageSize);
 
 }

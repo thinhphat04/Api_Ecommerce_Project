@@ -2,8 +2,10 @@ package com.phat.api_flutter.controllers;
 
 import com.phat.api_flutter.dto.ProductDto;
 import com.phat.api_flutter.models.Product;
+import com.phat.api_flutter.service.ProductService;
 import com.phat.api_flutter.service.ProductServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +17,7 @@ import java.util.Optional;
 public class ProductController {
 
     @Autowired
-    private ProductServiceImp productServiceImp;
+    private ProductService productService;
 
     @GetMapping
     public ResponseEntity<List<ProductDto>> getProducts(
@@ -24,7 +26,7 @@ public class ProductController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
         try {
-            List<ProductDto> products = productServiceImp.getProducts(criteria, category, page, pageSize).getContent();
+            List<ProductDto> products = productService.getProducts(criteria, category, page, pageSize).getContent();
             if (products.isEmpty()) {
                 return ResponseEntity.status(404).body(List.of());
             }
@@ -39,19 +41,18 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable String id) {
-        Optional<Product> product = productServiceImp.getProductById(id);
+        Optional<Product> product = productService.getProductById(id);
         return product.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(404).body(null));
     }
 
-//    @GetMapping("/search")
-//    public ResponseEntity<Page<Product>> searchProducts(
-//            @RequestParam String q,
-//            @RequestParam Optional<String> category,
-//            @RequestParam Optional<String> genderAgeCategory,
-//            @RequestParam(defaultValue = "1") int page,
-//            @RequestParam(defaultValue = "10") int pageSize) {
-////        Optional<ObjectId> categoryId = category.map(ObjectId::new);
-//        Page<Product> searchResults = productService.searchProducts(q, category, genderAgeCategory, page, pageSize);
-//        return ResponseEntity.ok(searchResults);
-//    }
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts(
+            @RequestParam String q,
+            @RequestParam Optional<String> category,
+            @RequestParam Optional<String> genderAgeCategory,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        List<Product> searchResults = productService.searchProducts(q, category, genderAgeCategory, page, pageSize).getContent();
+        return ResponseEntity.ok(searchResults);
+    }
 }

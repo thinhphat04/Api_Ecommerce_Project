@@ -75,16 +75,16 @@ public class ProductServiceImp implements ProductService {
         return productRepository.findById(id);
     }
 
-//    public Page<Product> searchProducts(String searchTerm, Optional<String> category, Optional<String> genderAgeCategory, int page, int pageSize) {
-//        Pageable pageable = PageRequest.of(page - 1, pageSize);
-//
-//        if (category.isPresent() && genderAgeCategory.isPresent()) {
-//            return productRepository.findByCategoryAndGenderAgeCategoryAndNameContainingIgnoreCase(
-//                    category.get(), genderAgeCategory.get(), searchTerm, pageable);
-//        } else if (category.isPresent()) {
-//            return productRepository.findByCategoryAndNameContainingIgnoreCase(category.get(), searchTerm, pageable);
-//        } else {
-//            return productRepository.findByNameContainingIgnoreCase(searchTerm, pageable);
-//        }
-//    }
+    public Page<Product> searchProducts(String searchTerm, Optional<String> category, Optional<String> genderAgeCategory, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+
+        if (category.isPresent() && genderAgeCategory.isPresent()) {
+            return productRepository.findByCategoryAndGenderAgeCategoryAndNameContainingIgnoreCase(
+                    category.get(), genderAgeCategory.get(), searchTerm, pageable);
+        } else if (category.isPresent()) {
+            return productRepository.findByCategoryAndNameContainingIgnoreCase(category.get(), searchTerm, pageable);
+        } else {
+            return productRepository.findByNameContainingIgnoreCase(searchTerm, pageable);
+        }
+    }
 }
