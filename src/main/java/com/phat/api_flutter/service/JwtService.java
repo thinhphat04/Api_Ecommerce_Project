@@ -1,9 +1,6 @@
 package com.phat.api_flutter.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
@@ -80,6 +77,15 @@ public class JwtService {
             return false;
         }
         token = token.replace("Bearer", "").trim();
-        return !isTokenExpired(token);
+
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getSignKey())
+                    .build()
+                    .parseClaimsJws(token);
+            return true;  // Token is valid
+        } catch (JwtException e) {
+            return false;  // Token is invalid or expired
+        }
     }
 }

@@ -191,11 +191,11 @@ public class AuthController {
         passwordResetService.resetPassword(resetPasswordRequest.getEmail(), resetPasswordRequest.getNewPassword());
         return ResponseEntity.ok().build();
     }
+
     @GetMapping("/verify-token")
-    public ResponseEntity<Map<String, Boolean>> verifyToken(@RequestHeader("Authorization") String authorization) {
-        jwtService.verifyToken(authorization); // Call the method but ignore the result
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("isValid", true); // Always return true
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Boolean> verifyToken(@RequestHeader("Authorization") String token) {
+        boolean isValid = jwtService.verifyToken(token);
+        return ResponseEntity.ok(isValid);
     }
+
 }

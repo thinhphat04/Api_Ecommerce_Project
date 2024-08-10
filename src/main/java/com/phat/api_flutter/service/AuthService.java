@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
 
 @Service
 public class AuthService implements UserDetailsService {
@@ -22,14 +24,23 @@ public class AuthService implements UserDetailsService {
         this.userRepository = userRepository;
         this.encoder = encoder;
     }
+//v1
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        User userDetail = userRepository.findUserByName(username);
+//        if (userDetail == null) {
+//            throw new UsernameNotFoundException("User name not found: " + username);
+//        }
+//        // Chuyển đổi từ User thành CustomUser
+//        return new CustomUser(userDetail);
+//    }
+
+//    v2
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User userDetail = userRepository.findUserByName(username);
-        if (userDetail == null) {
-            throw new UsernameNotFoundException("User name not found: " + username);
-        }
-         // Chuyển đổi từ User thành CustomUser
-        return new CustomUser(userDetail);
+        User user = userRepository.findById(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User name not found: " + username));
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPasswordHash(), new ArrayList<>());
     }
 
     public User loadUserByEmail(String email) throws UsernameNotFoundException {
