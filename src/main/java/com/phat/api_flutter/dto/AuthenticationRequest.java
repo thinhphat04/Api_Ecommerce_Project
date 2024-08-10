@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+//login dto
 @Data
 public class AuthenticationRequest {
 //    Day la cua Phat
@@ -15,4 +16,8 @@ public class AuthenticationRequest {
     private String name;
     @NotBlank
     private String password;
+
+    private String phone;
+
+
 }

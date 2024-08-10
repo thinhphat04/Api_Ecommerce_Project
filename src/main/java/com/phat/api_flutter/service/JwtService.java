@@ -3,6 +3,7 @@ package com.phat.api_flutter.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
@@ -25,7 +26,6 @@ public class JwtService {
         return createToken(claims, userName);
     }
 
-
     private String createToken(Map<String, Object> claims, String userName) {
         return Jwts.builder()
                 .setClaims(claims)
@@ -36,9 +36,8 @@ public class JwtService {
                 .compact();
     }
 
-
     private Key getSignKey() {
-        byte[] keyBytes= Decoders.BASE64.decode(SECRET);
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -55,14 +54,16 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-
     private Claims extractAllClaims(String token) {
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(getSignKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSignKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (SignatureException e) {
+            throw new RuntimeException("Invalid JWT signature: " + e.getMessage());
+        }
     }
 
     private Boolean isTokenExpired(String token) {
@@ -74,5 +75,11 @@ public class JwtService {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-
+    public Boolean verifyToken(String token) {
+        if (token == null || token.isEmpty()) {
+            return false;
+        }
+        token = token.replace("Bearer", "").trim();
+        return !isTokenExpired(token);
+    }
 }

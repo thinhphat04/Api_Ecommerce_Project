@@ -11,7 +11,7 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendMail(String to, String subject, String body, String successMessage, String errorMessage) {
+    public void sendOtpEmail(String to, String subject, String body, String successMessage, String errorMessage) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(System.getenv("EMAIL"));

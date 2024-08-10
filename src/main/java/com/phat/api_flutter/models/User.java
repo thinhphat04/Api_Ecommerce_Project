@@ -44,9 +44,10 @@ public class User {
 
     private String phone;
 
-//    private boolean isAdmin;
+   private boolean isAdmin;
 
-    private String roles;
+    //private String roles;
+
     private Integer resetPasswordOtp;
 
     private Date resetPasswordOtpExpires;
@@ -57,7 +58,13 @@ public class User {
     @DBRef
     private List<WishlistItem> wishlist;
 
+    public String getRoles() {
+        return isAdmin ? "ADMIN" : "USER";
+    }
 
+    public void setRoles(String roles) {
+        this.isAdmin = "ADMIN".equalsIgnoreCase(roles);
+    }
 
 
 

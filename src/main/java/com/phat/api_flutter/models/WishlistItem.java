@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-class WishlistItem {
+public class WishlistItem {
     private String productId;
     private String productName;
     private String productImage;
