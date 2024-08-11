@@ -18,8 +18,9 @@ public class CategoryController {
     public CategoryController(ICategoryService categoryService) {
         this.categoryService = categoryService;
     }
-    @GetMapping
+    @GetMapping("/../../categories")
     public ResponseEntity<List<Category>> getCategories() {
+
         List<Category> categories = categoryService.getAllCategories();
         if (categories.isEmpty()) {
             return ResponseEntity.status(404).body(null);
