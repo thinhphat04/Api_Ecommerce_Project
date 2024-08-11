@@ -30,17 +30,15 @@ public class Product {
     private String image;
     private List<String> images;
 
-    @DBRef
     private List<String> reviews;
     private int numberOfReviews = 0;
     private List<String> sizes;
 
-//    @DBRef
     private String category;
 
     private GenderAgeCategory genderAgeCategory;
     private int countInStock;
-    private LocalDateTime dateAdded ;
+    private Date dateAdded ;
 
     private int __v;
 

@@ -2,10 +2,8 @@ package com.phat.api_flutter.controllers;
 
 import com.phat.api_flutter.dto.ProductDto;
 import com.phat.api_flutter.models.Product;
-import com.phat.api_flutter.service.ProductService;
-import com.phat.api_flutter.service.ProductServiceImp;
+import com.phat.api_flutter.service.impl.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +15,7 @@ import java.util.Optional;
 public class ProductController {
 
     @Autowired
-    private ProductService productService;
+    private IProductService productService;
 
     @GetMapping
     public ResponseEntity<List<ProductDto>> getProducts(
