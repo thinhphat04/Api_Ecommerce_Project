@@ -20,7 +20,7 @@ import java.util.*;
 
 @RestController
 //@RequestMapping("/api/v1")
-public class AuthController {
+public class AuthController extends BaseController {
 
     private UserService userService;
     private TokenRepository tokenRepository;
