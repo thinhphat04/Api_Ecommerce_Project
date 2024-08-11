@@ -13,9 +13,9 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @NoArgsConstructor
 @Document(collection = "categories")
 public class Category {
-
-    @MongoId
-    private String _id;
+    @Id
+//    @JsonSerialize(using= ToStringSerializer.class)
+    private String id;
 
     private String name;
 

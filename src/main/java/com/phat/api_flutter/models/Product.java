@@ -1,5 +1,6 @@
 package com.phat.api_flutter.models;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,9 +18,9 @@ import java.util.List;
 @NoArgsConstructor
 @Document(collection = "products")
 public class Product {
-
-    @MongoId
-    private String _id;
+    @Id
+//    @JsonSerialize(using= ToStringSerializer.class)
+    private String id;
 
     private String name;
     private String description;
@@ -30,12 +31,12 @@ public class Product {
     private List<String> images;
 
     @DBRef
-    private List<Review> reviews;
+    private List<String> reviews;
     private int numberOfReviews = 0;
     private List<String> sizes;
 
-    @DBRef
-    private Category category;
+//    @DBRef
+    private String category;
 
     private GenderAgeCategory genderAgeCategory;
     private int countInStock;
@@ -44,6 +45,6 @@ public class Product {
     private int __v;
 
     public enum GenderAgeCategory {
-        MEN, WOMEN, UNISEX, KIDS
+        men, women, unisex, kids
     }
 }

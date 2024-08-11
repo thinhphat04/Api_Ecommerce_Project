@@ -1,10 +1,18 @@
 package com.phat.api_flutter.repository;
 
 import com.phat.api_flutter.models.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.List;
+import java.sql.Date;
 
 public interface ProductRepository extends MongoRepository<Product, String> {
-    List<Product> findByName(String name);
+    Page<Product> findByCategory(String category, Pageable pageable);
+    Page<Product> findByCategoryAndDateAddedAfter(String category, Date dateAdded, Pageable pageable);
+    Page<Product> findByDateAddedAfter(Date dateAdded, Pageable pageable);
+    Page<Product> findByRatingGreaterThanEqual(double rating, Pageable pageable);
+    Page<Product> findByCategoryAndGenderAgeCategoryAndNameContainingIgnoreCase(String category, String genderAgeCategory, String name, Pageable pageable);
+    Page<Product> findByCategoryAndNameContainingIgnoreCase(String category, String name, Pageable pageable);
+    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }
