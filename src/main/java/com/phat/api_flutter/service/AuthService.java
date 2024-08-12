@@ -40,7 +40,7 @@ public class AuthService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findById(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User name not found: " + username));
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPasswordHash(), new ArrayList<>());
+        return new org.springframework.security.core.userdetails.User(user.getId(), user.getPasswordHash(), new ArrayList<>());
     }
 
     public User loadUserByEmail(String email) throws UsernameNotFoundException {
@@ -54,6 +54,10 @@ public class AuthService implements UserDetailsService {
 
 
     public User addUser(User userInfo) {
+//        userInfo.setPasswordHash(encoder.encode(userInfo.getPasswordHash()));
+//        if(userInfo.getRoles() == null || userInfo.getRoles().trim().isBlank()) {
+//            userInfo.setRoles("USER");
+//        }
         userRepository.save(userInfo);
         return userInfo;
     }

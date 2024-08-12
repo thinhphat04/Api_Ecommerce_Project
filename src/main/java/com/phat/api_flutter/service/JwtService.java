@@ -27,7 +27,7 @@ public class JwtService {
 
                 .setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // ton tai trong 1 tieng
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .setHeaderParam("typ", "JWT")
                 .compact();
@@ -38,8 +38,12 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractAllClaims(token).get("id", String.class);
+    }
+    public String extractUserRole(String token) {
+        return extractAllClaims(token).get("isAdmin", String.class);
     }
 
     public Date extractExpiration(String token) {
