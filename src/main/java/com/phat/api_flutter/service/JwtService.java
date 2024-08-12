@@ -18,18 +18,18 @@ public class JwtService {
     @Value("${ACCESS_TOKEN_SECRET}")
     private String SECRET;
 
-    public String generateToken(String userName) {
-        Map<String, Object> claims = new HashMap<>();
+    public String generateToken(Map<String, Object> claims,String userName) {
         return createToken(claims, userName);
     }
 
     private String createToken(Map<String, Object> claims, String userName) {
         return Jwts.builder()
+
                 .setClaims(claims)
-                .setSubject(userName)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .setHeaderParam("typ", "JWT")
                 .compact();
     }
 

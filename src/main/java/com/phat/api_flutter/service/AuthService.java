@@ -54,10 +54,6 @@ public class AuthService implements UserDetailsService {
 
 
     public User addUser(User userInfo) {
-        userInfo.setPasswordHash(encoder.encode(userInfo.getPasswordHash()));
-        if(userInfo.getRoles() == null || userInfo.getRoles().trim().isBlank()) {
-            userInfo.setRoles("USER");
-        }
         userRepository.save(userInfo);
         return userInfo;
     }

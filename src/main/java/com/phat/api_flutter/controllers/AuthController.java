@@ -101,10 +101,11 @@ public class AuthController extends BaseController {
 
         if (passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
             Map<String, Object> claims = new HashMap<>();
+            claims.put("id", user.getId());
             claims.put("isAdmin", user.isAdmin());
 
-            String accessToken = jwtService.generateToken(user.getId().toString());
-            String refreshToken = jwtService.generateToken(user.getId().toString());
+            String accessToken = jwtService.generateToken(claims, user.getId().toString());
+            String refreshToken = jwtService.generateToken(claims, user.getId().toString());
 
             Optional<Token> tokenOptional = tokenRepository.findByUserId(user.getId());
             tokenOptional.ifPresent(tokenRepository::delete);
