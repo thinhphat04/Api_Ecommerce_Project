@@ -27,7 +27,7 @@ public class JwtService {
 
                 .setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // ton tai trong 1 tieng
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .setHeaderParam("typ", "JWT")
                 .compact();
@@ -38,16 +38,17 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractAllClaims(token).get("id", String.class);
+    }
+    public Boolean extractUserRole(String token) {
+        Boolean result = extractAllClaims(token).get("isAdmin", Boolean.class);
+        return result;
     }
 
     public Date extractExpiration(String token) {
-        return extractClaims(token).getExpiration();
-    }
-
-    public Claims extractClaims(String token) {
-        return extractClaim(token, claims -> claims);
+        return extractClaim(token, Claims::getExpiration);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -62,11 +63,10 @@ public class JwtService {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (JwtException e) {
-            throw new RuntimeException("Invalid JWT: " + e.getMessage());
+        } catch (SignatureException e) {
+            throw new RuntimeException("Invalid JWT signature: " + e.getMessage());
         }
     }
-
 
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
