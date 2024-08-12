@@ -43,7 +43,11 @@ public class JwtService {
     }
 
     public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+        return extractClaims(token).getExpiration();
+    }
+
+    public Claims extractClaims(String token) {
+        return extractClaim(token, claims -> claims);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -58,10 +62,11 @@ public class JwtService {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (SignatureException e) {
-            throw new RuntimeException("Invalid JWT signature: " + e.getMessage());
+        } catch (JwtException e) {
+            throw new RuntimeException("Invalid JWT: " + e.getMessage());
         }
     }
+
 
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());

@@ -32,15 +32,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String requestPath = request.getRequestURI();
+
+        // Bỏ qua xác thực JWT cho các endpoint cụ thể
+        if (requestPath.equals("/api/v1/login") || requestPath.equals("/api/v1/register")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            username = jwtService.extractUsername(token);
+        // Kiểm tra xem Authorization header có token hay không
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return; // Ngăn chặn yêu cầu tiếp tục nếu không có token
         }
 
+        token = authHeader.substring(7);
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return; // Ngăn chặn yêu cầu tiếp tục nếu token không hợp lệ
+        }
+
+        // Nếu username tồn tại và chưa có xác thực trong SecurityContextHolder
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (jwtService.validateToken(token, userDetails)) {
@@ -48,8 +67,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return; // Ngăn chặn yêu cầu tiếp tục nếu token không hợp lệ
             }
         }
+
+        // Tiếp tục xử lý yêu cầu
         filterChain.doFilter(request, response);
     }
+
+
 }

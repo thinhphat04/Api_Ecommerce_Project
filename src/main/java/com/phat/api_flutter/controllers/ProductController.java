@@ -17,7 +17,7 @@ public class ProductController {
     @Autowired
     private IProductService productService;
 
-    @GetMapping
+    @GetMapping()
     public ResponseEntity<List<ProductDto>> getProducts(
             @RequestParam Optional<String> criteria,
             @RequestParam Optional<String> category,
