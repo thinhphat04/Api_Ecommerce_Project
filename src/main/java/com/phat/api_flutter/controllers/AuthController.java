@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-//@RequestMapping("/api/v1")
-public class AuthController extends BaseController {
+@RequestMapping("/api/v1")
+public class AuthController {
 
     private UserService userService;
     private TokenRepository tokenRepository;

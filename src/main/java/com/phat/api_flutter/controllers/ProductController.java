@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/products")
-public class ProductController extends BaseController {
+@RequestMapping("/api/v1/products")
+public class ProductController {
 
     @Autowired
     private IProductService productService;
