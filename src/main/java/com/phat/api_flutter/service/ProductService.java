@@ -64,7 +64,7 @@ public class ProductService implements IProductService {
                 product.getColours(),
                 product.getImage(),
                 product.getNumberOfReviews(),
-                product.getCategory(),
+                product.getCategory().get_id(),
                 product.getGenderAgeCategory(),
                 product.getCountInStock(),
                 product.getDateAdded()
@@ -87,5 +87,10 @@ public class ProductService implements IProductService {
         } else {
             return productRepository.findByNameContainingIgnoreCase(searchTerm, pageable);
         }
+    }
+
+    @Override
+    public Product addProduct(Product product) {
+        return productRepository.save(product);
     }
 }

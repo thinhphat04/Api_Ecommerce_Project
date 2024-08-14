@@ -4,6 +4,7 @@ package com.phat.api_flutter.controllers;
 import com.phat.api_flutter.dto.CategoryDTO;
 import com.phat.api_flutter.models.Category;
 import com.phat.api_flutter.models.Order;
+import com.phat.api_flutter.models.Product;
 import com.phat.api_flutter.models.User;
 import com.phat.api_flutter.service.impl.ICategoryService;
 import com.phat.api_flutter.service.impl.IOrderService;
@@ -20,8 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -32,6 +32,8 @@ public class AdminController {
      IUserServiceAdmin userService;
      IOrderService orderService;
     private MediaHelper mediaHelper;
+
+    //User
 
      @Autowired
      public AdminController(ICategoryService categoryService,
@@ -52,27 +54,7 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "User count: " + userCount));
     }
 
-//    @DeleteMapping("/users/{id}")
-//    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-//        User user = userService.findById(id);
-//        if (user == null) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//        }
-//
-//        List<Order> orders = orderService.findByUserId(id);
-//        List<String> orderItemIds = orders.stream()
-//                .flatMap(order -> order.getOrderItems().stream())
-//                .map(ObjectId::toString)
-//                .collect(Collectors.toList());
-//
-//        cartProductRepository.deleteByIdIn(user.get().getCartProducts());
-//        userRepository.deleteById(id);
-//        orderRepository.deleteByUserId(id);
-//        orderItemRepository.deleteByIdIn(orderItemIds);
-//        tokenRepository.deleteByUserId(id);
-//
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
+
     // CATEGORY
 
     @PostMapping("/categories")
@@ -128,128 +110,117 @@ public class AdminController {
         }
     }
 
-//    @DeleteMapping("/categories/{id}")
-//    public ResponseEntity<Void> deleteCategory(@PathVariable String id) {
-//        Optional<Category> categoryOpt = categoryRepository.findById(id);
-//        if (!categoryOpt.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//        }
-//
-//        Category category = categoryOpt.get();
-//        category.setMarkedForDeletion(true);
-//        categoryRepository.save(category);
-//
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<?> deleteCategory(@PathVariable String id) {
+        try {
+            Category categoryOptional = categoryService.findById(id);
+            if (categoryOptional == null) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Category not found");
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            }
 
-    // ORDER
+            categoryOptional.setMarkedForDeletion(true);
+            categoryService.updateCategory(categoryOptional);
 
-//    @GetMapping("/orders")
-//    public ResponseEntity<List<Order>> getOrders() {
-//        List<Order> orders = orderRepository.findAll(Sort.by(Sort.Direction.DESC, "dateOrdered"));
-//        return ResponseEntity.ok(orders);
-//    }
-//
-//    @GetMapping("/orders/count")
-//    public ResponseEntity<Map<String, Long>> getOrdersCount() {
-//        long count = orderRepository.count();
-//        return ResponseEntity.ok(Map.of("count", count));
-//    }
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("type", e.getClass().getSimpleName());
+            errorResponse.put("message", e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-//    @PatchMapping("/orders/{id}/status")
-//    public ResponseEntity<Order> changeOrderStatus(@PathVariable String id, @RequestBody Map<String, String> body) {
-//        Optional<Order> orderOpt = orderRepository.findById(id);
-//        if (!orderOpt.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//        }
-//
-//        Order order = orderOpt.get();
-//        String newStatus = body.get("status");
-//
-//        if (isValidStatusTransition(order.getStatus(), newStatus)) {
-//            order.getStatusHistory().add(order.getStatus());
-//            order.setStatus(newStatus);
-//            return ResponseEntity.ok(orderRepository.save(order));
-//        } else {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-//        }
-//    }
-//
-//    @DeleteMapping("/orders/{id}")
-//    public ResponseEntity<Void> deleteOrder(@PathVariable String id) {
-//        Optional<Order> orderOpt = orderRepository.findById(id);
-//        if (!orderOpt.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//        }
-//
-//        Order order = orderOpt.get();
-//        for (String orderItemId : order.getOrderItems()) {
-//            orderItemRepository.deleteById(orderItemId);
-//        }
-//        orderRepository.deleteById(id);
-//
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
-//
-//    // PRODUCT
-//
-//    @GetMapping("/products/count")
-//    public ResponseEntity<Map<String, Long>> getProductsCount() {
-//        long productCount = productRepository.count();
-//        if (productCount == 0) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Could not count products"));
-//        }
-//        return ResponseEntity.ok(Map.of("productCount", productCount));
-//    }
-//
-//    @PostMapping("/products")
-//    public ResponseEntity<Product> addProduct(@RequestParam("image") MultipartFile image, @RequestParam("images") MultipartFile[] images, @RequestBody Map<String, String> body) {
-//        try {
-//            Category category = categoryRepository.findById(body.get("category")).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid Category"));
-//
-//            if (category.isMarkedForDeletion()) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//            }
-//
-//            String imageUrl = saveImage(image);
-//            List<String> imagePaths = saveImages(images);
-//
-//            Product product = new Product(body.get("name"), imageUrl, imagePaths, category);
-//            product = productRepository.save(product);
-//            return ResponseEntity.status(HttpStatus.CREATED).body(product);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-//        }
-//    }
-//
-//    @PutMapping("/products/{id}")
-//    public ResponseEntity<Product> editProduct(@PathVariable String id, @RequestParam("images") MultipartFile[] images, @RequestBody Map<String, String> body) {
-//        if (!ObjectId.isValid(id) || !productRepository.existsById(id)) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//        }
-//
-//        Optional<Category> categoryOpt = categoryRepository.findById(body.get("category"));
-//        if (body.containsKey("category") && !categoryOpt.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//        }
-//
-//        Product product = productRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-//        product.updateProductDetails(body, saveImages(images));
-//        return ResponseEntity.ok(productRepository.save(product));
-//    }
-//
-    // Helper methods
-//    private String saveImage(MultipartFile image) {
-//        // Save image and return its URL
-//    }
-//
-//    private List<String> saveImages(MultipartFile[] images) {
-//        // Save multiple images and return their URLs
-//    }
-//
-//    private boolean isValidStatusTransition(String currentStatus, String newStatus) {
-//        // Validate status transition
-//    }
+    }
 
+    //PRODUCT
+    @PostMapping("/products/")
+    public ResponseEntity<?> addProduct(@RequestParam("name") String name,
+                                        @RequestParam("category") String categoryId,
+                                        @RequestParam("countInStock") int countInStock,
+                                        @RequestParam("description") String description,
+                                        @RequestParam("price") double price,
+                                        @RequestParam("image") MultipartFile image,
+                                        @RequestParam(value = "images", required = false) MultipartFile[] images,
+                                        @RequestParam("genderAgeCategory") String genderAgeCategory,
+                                        @RequestParam(value = "colours[0]",required = false) String colours0,
+                                        @RequestParam(value = "colours[1]",required = false) String colours1,
+                                        @RequestParam(value = "colours[2]",required = false) String colours2,
+                                        @RequestParam(value = "sizes[0]",required = false) String sizes0,
+                                        @RequestParam(value = "sizes[1]",required = false) String sizes1,
+                                        @RequestParam(value = "sizes[2]",required = false) String sizes2,
+                                        @RequestParam(value = "sizes[3]",required = false) String sizes3
+                                            ) {
+        try {
+            List<String> colours = new ArrayList<>();
+            colours.add(colours0);
+            colours.add(colours1);
+            colours.add(colours2);
+            List<String> sizes = new ArrayList<>();
+            sizes.add(sizes0);
+            sizes.add(sizes1);
+            sizes.add(sizes2);
+            sizes.add(sizes3);
+            // Xử lý upload ảnh chính
+            String imageUrl = null;
+            if (!image.isEmpty()) {
+                imageUrl = mediaHelper.uploadFile(image);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No file found");
+            }
 
+            // Xử lý upload gallery ảnh
+            List<String> imagePaths = new ArrayList<>();
+            if (images != null && images.length > 0) {
+                for (MultipartFile galleryImage : images) {
+                    String imagePath = mediaHelper.uploadFile(galleryImage);
+                    imagePaths.add(imagePath);
+                }
+            }
+            // Kiểm tra category
+            Category category = categoryService.findById(categoryId);
+            if (category == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid Category");
+            }
+
+            if (category.isMarkedForDeletion()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Category marked for deletion, you cannot add products to this category");
+            }
+
+            // Chuyển đổi GenderAgeCategory từ String sang Enum
+            Product.GenderAgeCategory genderAgeCategoryEnum = Product.convertStringtoEnums(genderAgeCategory);
+            if (genderAgeCategoryEnum == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid GenderAgeCategory");
+            }
+
+            // Tạo đối tượng sản phẩm mới
+            Product product = new Product();
+            product.setName(name);
+            product.setDescription(description);
+            product.setPrice(price);
+            product.setColours(colours);
+            product.setImage(imageUrl);
+            if (!imagePaths.isEmpty()) {
+                product.setImages(imagePaths);
+            }
+            product.setSizes(sizes);
+            product.setCategory(category);
+            product.setGenderAgeCategory(genderAgeCategoryEnum);
+            product.setCountInStock(countInStock);
+            product.setDateAdded(new Date()); // Lưu ngày thêm sản phẩm
+
+            // Lưu sản phẩm vào cơ sở dữ liệu
+            Product savedProduct = productService.addProduct(product);
+            if (savedProduct == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("The product could not be created");
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("type", e.getClass().getSimpleName(), "message", e.getMessage()));
+        }
+    }
 }

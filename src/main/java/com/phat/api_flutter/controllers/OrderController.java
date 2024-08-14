@@ -12,11 +12,6 @@ import java.util.List;
 public class OrderController {
 
     IOrderService orderService;
-//
-//    @Autowired
-//    public OrderController(IOrderService orderService) {
-//        this.orderService = orderService;
-//    }
 
     @PostMapping
     public String addOrder(@RequestBody Order order) {
