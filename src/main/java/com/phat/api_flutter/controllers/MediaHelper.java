@@ -4,6 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -42,9 +43,14 @@ public class MediaHelper {
 
     public void deleteImages(String[] imageUrls) throws IOException {
         for (String imageUrl : imageUrls) {
-            File file = new File(imageUrl);
-            if (file.exists()) {
-                file.delete();
+            // Convert URL to file path
+            String filePath = UPLOAD_DIR + imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+            File file = new File(filePath);
+            if(!file.exists()){
+                throw new FileNotFoundException("Failed to delete file: " + imageUrl);
+            }
+            if (!file.delete()) {
+                throw new IOException("Failed to delete image: " + filePath);
             }
         }
     }

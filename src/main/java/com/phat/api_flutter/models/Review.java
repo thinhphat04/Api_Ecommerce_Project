@@ -17,7 +17,7 @@ import java.util.Date;
 @Document(collection = "reviews")
 public class Review {
 
-    @MongoId
+    @Id
     private String _id;
 
     @DBRef

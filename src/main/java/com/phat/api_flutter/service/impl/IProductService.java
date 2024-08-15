@@ -11,4 +11,7 @@ public interface IProductService {
     Optional<Product> getProductById(String id);
     Page<Product> searchProducts(String searchTerm, Optional<String> category, Optional<String> genderAgeCategory, int page, int pageSize);
     Product addProduct(Product product);
+    Product updateProduct(Product product);
+    void deleteProduct(String id);
+    long countProducts();
 }

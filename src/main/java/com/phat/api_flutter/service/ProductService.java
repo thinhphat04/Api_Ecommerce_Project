@@ -93,4 +93,35 @@ public class ProductService implements IProductService {
     public Product addProduct(Product product) {
         return productRepository.save(product);
     }
+
+    @Override
+    public Product updateProduct(Product product) {
+        Product existingProduct = productRepository.findById(product.getId()).orElse(null);
+        if(existingProduct != null) {
+            existingProduct.setName(product.getName());
+            existingProduct.setDescription(product.getDescription());
+            existingProduct.setPrice(product.getPrice());
+            existingProduct.setRating(product.getRating());
+            existingProduct.setColours(product.getColours());
+            existingProduct.setImage(product.getImage());
+            existingProduct.setImages(product.getImages());
+            existingProduct.setNumberOfReviews(product.getNumberOfReviews());
+            existingProduct.setCategory(product.getCategory());
+            existingProduct.setGenderAgeCategory(product.getGenderAgeCategory());
+            existingProduct.setCountInStock(product.getCountInStock());
+            existingProduct.setDateAdded(product.getDateAdded());
+            return productRepository.save(existingProduct);
+        }
+        return existingProduct;
+    }
+
+    @Override
+    public void deleteProduct(String id) {
+        productRepository.deleteById(id);
+    }
+
+    @Override
+    public long countProducts() {
+        return  productRepository.count();
+    }
 }
