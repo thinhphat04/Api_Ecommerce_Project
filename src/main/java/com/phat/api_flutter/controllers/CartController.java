@@ -3,7 +3,7 @@ package com.phat.api_flutter.controllers;
 import com.phat.api_flutter.dto.AddToCartRequest;
 import com.phat.api_flutter.dto.AddToCartResponse;
 import com.phat.api_flutter.dto.CartProductDto;
-import com.phat.api_flutter.service.CartService;
+import com.phat.api_flutter.service.impl.ICartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class CartController {
 
     @Autowired
-    private CartService cartService;
+    private ICartService cartService;
 
     @GetMapping("/cart")
     public ResponseEntity<?> getUserCart(@PathVariable String userId) {

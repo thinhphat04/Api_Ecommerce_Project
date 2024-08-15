@@ -9,6 +9,7 @@ import com.phat.api_flutter.models.User;
 import com.phat.api_flutter.repository.CartProductRepository;
 import com.phat.api_flutter.repository.ProductRepository;
 import com.phat.api_flutter.repository.UserRepository;
+import com.phat.api_flutter.service.impl.ICartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class CartService {
+public class CartService implements ICartService {
 
     @Autowired
     private UserRepository userRepository;
