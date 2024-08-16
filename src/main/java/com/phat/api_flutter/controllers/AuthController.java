@@ -5,26 +5,17 @@ import com.phat.api_flutter.models.Token;
 import com.phat.api_flutter.repository.TokenRepository;
 import com.phat.api_flutter.service.AuthService;
 import com.phat.api_flutter.service.JwtService;
-import com.phat.api_flutter.models.CustomUser;
 import com.phat.api_flutter.models.User;
 import com.phat.api_flutter.service.PasswordResetService;
 import com.phat.api_flutter.service.UserService;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.*;
 
@@ -168,7 +159,9 @@ public class AuthController {
     // Api /api/random yêu cầu phải xác thực mới có thể request
     @GetMapping("/test")
     public String randomStuff() {
-        return "JWT Hợp lệ mới có thể thấy được message này";
+        final String baseUrl =
+                ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        return "JWT Hợp lệ mới có thể thấy được message này, host URL la: " + baseUrl;
     }
 
     @PostMapping("/forgot-password")

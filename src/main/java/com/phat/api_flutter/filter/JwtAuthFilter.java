@@ -35,12 +35,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
-        String isAdmin = null  ;
+        boolean isAdmin = false  ;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             username = jwtService.extractUsername(token);
             isAdmin = jwtService.extractUserRole(token);
+//            print("isAdmin: " + isAdmin);
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

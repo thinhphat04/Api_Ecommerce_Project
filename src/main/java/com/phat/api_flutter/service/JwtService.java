@@ -42,8 +42,9 @@ public class JwtService {
     public String extractUsername(String token) {
         return extractAllClaims(token).get("id", String.class);
     }
-    public String extractUserRole(String token) {
-        return extractAllClaims(token).get("isAdmin", String.class);
+    public Boolean extractUserRole(String token) {
+        Boolean result = extractAllClaims(token).get("isAdmin", Boolean.class);
+        return result;
     }
 
     public Date extractExpiration(String token) {

@@ -1,100 +1,127 @@
 package com.phat.api_flutter.service;
 
-import com.phat.api_flutter.ImplementServices.IProductService;
+import com.phat.api_flutter.dto.ProductDto;
 import com.phat.api_flutter.models.Product;
-import com.phat.api_flutter.repository.CategoryRepository;
 import com.phat.api_flutter.repository.ProductRepository;
+import com.phat.api_flutter.service.impl.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService implements IProductService {
-    LocalDateTime now = LocalDateTime.now();
-    ProductRepository productRepository;
-    CategoryRepository categoryRepository;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
-        this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
+    private ProductRepository productRepository;
+
+    public Page<ProductDto> getProducts(Optional<String> criteria, Optional<String> category, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Page<Product> productPage;
+
+        if (criteria.isPresent()) {
+            String crit = criteria.get();
+            if ("newArrivals".equals(crit)) {
+                Date twoWeeksAgo = new Date(System.currentTimeMillis() - 14 * 24 * 60 * 60 * 1000L);
+                if (category.isPresent()) {
+                    productPage = productRepository.findByCategoryAndDateAddedAfter(category.get(), twoWeeksAgo, pageable);
+                } else {
+                    productPage = productRepository.findByDateAddedAfter(twoWeeksAgo, pageable);
+                }
+            } else if ("popular".equals(crit)) {
+                productPage = productRepository.findByRatingGreaterThanEqual(4.5, pageable);
+            } else {
+                productPage = productRepository.findAll(pageable);
+            }
+        } else if (category.isPresent()) {
+            productPage = productRepository.findByCategory(category.get(), pageable);
+        } else {
+            productPage = productRepository.findAll(pageable);
+        }
+
+        // Convert Page<Product> to Page<ProductDto>
+        List<ProductDto> productDtos = productPage.getContent().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(productDtos, pageable, productPage.getTotalElements());
+    }
+
+    private ProductDto convertToDto(Product product) {
+        return new ProductDto(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getRating(),
+                product.getColours(),
+                product.getImage(),
+                product.getNumberOfReviews(),
+                product.getCategory().getId(),
+                product.getGenderAgeCategory(),
+                product.getCountInStock(),
+                product.getDateAdded()
+        );
+    }
+
+
+    public Optional<Product> getProductById(String id) {
+        return productRepository.findById(id);
+    }
+
+    public Page<Product> searchProducts(String searchTerm, Optional<String> category, Optional<String> genderAgeCategory, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+
+        if (category.isPresent() && genderAgeCategory.isPresent()) {
+            return productRepository.findByCategoryAndGenderAgeCategoryAndNameContainingIgnoreCase(
+                    category.get(), genderAgeCategory.get(), searchTerm, pageable);
+        } else if (category.isPresent()) {
+            return productRepository.findByCategoryAndNameContainingIgnoreCase(category.get(), searchTerm, pageable);
+        } else {
+            return productRepository.findByNameContainingIgnoreCase(searchTerm, pageable);
+        }
     }
 
     @Override
-    public List<Product> getAllProducts() {
-        try{
-    List<Product> products = productRepository.findAll();
-            return products;
-        }
-        catch (Exception e){
-            throw new IllegalArgumentException("Error getting products: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public Product getOneProduct(String id) {
-        return productRepository.findById(id).orElse(null);
-    }
-
-
-    @Override
-    public Product createProduct(Product product) {
-        // Check if category is valid
-        if (product.getCategory() == null || !categoryRepository.existsById(product.getCategory().get_id())) {
-            throw new IllegalArgumentException("Invalid category.");
-        }
-//        product.setDateAdded(now);
-        product.setDateAdded(now);
+    public Product addProduct(Product product) {
         return productRepository.save(product);
     }
 
     @Override
-    public Product updateProduct(String id, Product product) {
-        Optional<Product> existingProduct = productRepository.findById(id);
-        if (existingProduct.isPresent()) {
-            Product updatedProduct  = existingProduct.get();
-            // Check if category is valid
-            if (updatedProduct.getCategory() == null || !categoryRepository.existsById(updatedProduct.getCategory().get_id())) {
-                throw new IllegalArgumentException("Invalid category.");
-            }
-
-            updatedProduct.setName(product.getName());
-            updatedProduct.setDescription(product.getDescription());
-            updatedProduct.setPrice(product.getPrice());
-            updatedProduct.setRating(product.getRating());
-            updatedProduct.setColours(product.getColours());
-            updatedProduct.setImage(product.getImage());
-            updatedProduct.setImages(product.getImages());
-            updatedProduct.setReviews(product.getReviews());
-            updatedProduct.setNumberOfReviews(product.getNumberOfReviews());
-            updatedProduct.setSizes(product.getSizes());
-            updatedProduct.setCategory(product.getCategory());
-            updatedProduct.setGenderAgeCategory(product.getGenderAgeCategory());
-            updatedProduct.setCountInStock(product.getCountInStock());
-            updatedProduct.setDateAdded(LocalDateTime.now());
-
-            return productRepository.save(product);
-        } else {
-            return null;
+    public Product updateProduct(Product product) {
+        Product existingProduct = productRepository.findById(product.getId()).orElse(null);
+        if(existingProduct != null) {
+            existingProduct.setName(product.getName());
+            existingProduct.setDescription(product.getDescription());
+            existingProduct.setPrice(product.getPrice());
+            existingProduct.setRating(product.getRating());
+            existingProduct.setColours(product.getColours());
+            existingProduct.setImage(product.getImage());
+            existingProduct.setImages(product.getImages());
+            existingProduct.setNumberOfReviews(product.getNumberOfReviews());
+            existingProduct.setCategory(product.getCategory());
+            existingProduct.setGenderAgeCategory(product.getGenderAgeCategory());
+            existingProduct.setCountInStock(product.getCountInStock());
+            existingProduct.setDateAdded(product.getDateAdded());
+            return productRepository.save(existingProduct);
         }
+        return existingProduct;
     }
 
     @Override
-    public boolean deleteProduct(String id) {
-        Optional<Product> existingProduct = productRepository.findById(id);
-        if (existingProduct.isPresent()) {
-            productRepository.delete(existingProduct.get());
-            return true;
-        } else {
-            throw new IllegalArgumentException("Product not found with ID: " + id);
-        }
+    public void deleteProduct(String id) {
+        productRepository.deleteById(id);
     }
+
     @Override
-    public List<Product> findByProductName(String productName){
-        return productRepository.findByName(productName);
+    public long countProducts() {
+        return  productRepository.count();
     }
 }
-

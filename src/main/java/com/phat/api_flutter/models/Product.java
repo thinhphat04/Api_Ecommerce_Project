@@ -1,14 +1,12 @@
 package com.phat.api_flutter.models;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -17,9 +15,9 @@ import java.util.List;
 @NoArgsConstructor
 @Document(collection = "products")
 public class Product {
-
-    @MongoId
-    private String _id;
+    @Id
+//    @JsonSerialize(using= ToStringSerializer.class)
+    private String id;
 
     private String name;
     private String description;
@@ -29,21 +27,31 @@ public class Product {
     private String image;
     private List<String> images;
 
-    @DBRef
-    private List<Review> reviews;
+    private List<String> reviews;
     private int numberOfReviews = 0;
     private List<String> sizes;
 
-    @DBRef
     private Category category;
 
     private GenderAgeCategory genderAgeCategory;
     private int countInStock;
-    private LocalDateTime dateAdded ;
+    private Date dateAdded ;
 
     private int __v;
 
     public enum GenderAgeCategory {
-        MEN, WOMEN, UNISEX, KIDS
+        men, women, unisex, kids
+    }
+
+    public static GenderAgeCategory convertStringtoEnums(String value){
+        try {
+            return GenderAgeCategory.valueOf(value);
+
+        } catch (IllegalArgumentException e) {
+            // Handle the case when the input String doesn't match any enum constant
+            // For example, we might want to return a default value or throw a more meaningful exception.
+            System.out.println("Invalid GenderAgeCategory: " + value);
+            return null;
+        }
     }
 }
