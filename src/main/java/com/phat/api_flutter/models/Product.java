@@ -31,7 +31,7 @@ public class Product {
     private int numberOfReviews = 0;
     private List<String> sizes;
 
-    private String category;
+    private Category category;
 
     private GenderAgeCategory genderAgeCategory;
     private int countInStock;
@@ -41,5 +41,17 @@ public class Product {
 
     public enum GenderAgeCategory {
         men, women, unisex, kids
+    }
+
+    public static GenderAgeCategory convertStringtoEnums(String value){
+        try {
+            return GenderAgeCategory.valueOf(value);
+
+        } catch (IllegalArgumentException e) {
+            // Handle the case when the input String doesn't match any enum constant
+            // For example, we might want to return a default value or throw a more meaningful exception.
+            System.out.println("Invalid GenderAgeCategory: " + value);
+            return null;
+        }
     }
 }

@@ -21,4 +21,29 @@ public class CategoryService implements ICategoryService {
     public Optional<Category> getCategoryById(String id) {
         return categoryRepository.findById(id);
     }
+
+    @Override
+    public Category addCategory(Category category) {
+        return categoryRepository.save(category);
+    }
+
+    @Override
+    public Category findById(String id) {
+        return categoryRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Category updateCategory(Category category) {
+        Category existingCategory = categoryRepository.findById(category.getId()).orElse(null);
+        if (existingCategory != null) {
+            existingCategory.setId(category.getId()); ;
+            existingCategory.setName(category.getName());
+            existingCategory.setImage(category.getImage());
+            existingCategory.setColour(category.getColour());
+            existingCategory.setMarkedForDeletion(category.isMarkedForDeletion());
+            return categoryRepository.save(existingCategory);
+        }
+        return existingCategory;
+    }
+
 }
