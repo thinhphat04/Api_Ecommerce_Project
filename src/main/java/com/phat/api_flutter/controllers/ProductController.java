@@ -26,7 +26,7 @@ public class ProductController {
         try {
             List<ProductDto> products = productService.getProducts(criteria, category, page, pageSize).getContent();
             if (products.isEmpty()) {
-                return ResponseEntity.status(404).body(List.of());
+                return ResponseEntity.status(200).body(List.of());
             }
             return ResponseEntity.ok(products);
         } catch (Exception e) {
