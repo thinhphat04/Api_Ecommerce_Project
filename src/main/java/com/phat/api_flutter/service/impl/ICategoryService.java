@@ -9,4 +9,8 @@ public interface ICategoryService {
     List<Category> getCategories();
 
     Optional<Category> getCategoryById(String id);
+
+    Category addCategory(Category category);
+    Category findById(String id);
+    Category updateCategory(Category category);
 }

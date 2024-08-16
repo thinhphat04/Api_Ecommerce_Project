@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.*;
 
@@ -158,7 +159,9 @@ public class AuthController {
     // Api /api/random yêu cầu phải xác thực mới có thể request
     @GetMapping("/test")
     public String randomStuff() {
-        return "JWT Hợp lệ mới có thể thấy được message này";
+        final String baseUrl =
+                ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        return "JWT Hợp lệ mới có thể thấy được message này, host URL la: " + baseUrl;
     }
 
     @PostMapping("/forgot-password")

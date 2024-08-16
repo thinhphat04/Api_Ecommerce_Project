@@ -52,10 +52,9 @@ public class User {
 
     private Date resetPasswordOtpExpires;
 
-    @DBRef
-    private List<CartProduct> cart;
+    private List<String> cart;
 
-    @DBRef
+//    @DBRef
     private List<WishlistItem> wishlist;
 
     public String getRoles() {

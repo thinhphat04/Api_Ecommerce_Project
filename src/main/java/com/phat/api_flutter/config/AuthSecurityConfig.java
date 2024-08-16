@@ -36,7 +36,7 @@ public class AuthSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth.requestMatchers( "/api/v1/register", "/api/v1/login", "/api/v1/forgot-password","api/v1/verify-otp", "/api/v1/reset-password", "/api/v1/verify-token").permitAll())
+                .authorizeHttpRequests(auth -> auth.requestMatchers( "/api/v1/register", "/api/v1/login", "/api/v1/forgot-password","api/v1/verify-otp", "/api/v1/reset-password", "/api/v1/verify-token", "/**").permitAll())
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/**").authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
