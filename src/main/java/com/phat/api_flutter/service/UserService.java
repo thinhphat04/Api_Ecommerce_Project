@@ -1,5 +1,6 @@
 package com.phat.api_flutter.service;
 
+import com.phat.api_flutter.dto.UpdateUserDTO;
 import com.phat.api_flutter.models.User;
 import com.phat.api_flutter.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,7 @@ public class UserService {
     }
 
     public User saveUser(User user) {
-
-        user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+       // user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         return userRepository.save(user);
     }
 
