@@ -54,7 +54,7 @@ public class User {
 
     private List<String> cart;
 
-    @DBRef
+//    @DBRef
     private List<WishlistItem> wishlist;
 
     public String getRoles() {
