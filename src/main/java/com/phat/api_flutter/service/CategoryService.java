@@ -34,9 +34,9 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public Category updateCategory(Category category) {
-        Category existingCategory = categoryRepository.findById(category.get_id()).orElse(null);
+        Category existingCategory = categoryRepository.findById(category.getId()).orElse(null);
         if (existingCategory != null) {
-            existingCategory.set_id(category.get_id()); ;
+            existingCategory.setId(category.getId()); ;
             existingCategory.setName(category.getName());
             existingCategory.setImage(category.getImage());
             existingCategory.setColour(category.getColour());

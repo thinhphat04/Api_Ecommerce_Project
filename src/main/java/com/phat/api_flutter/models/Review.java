@@ -18,7 +18,7 @@ import java.util.Date;
 public class Review {
 
     @Id
-    private String _id;
+    private String id;
 
     @DBRef
     private User user;

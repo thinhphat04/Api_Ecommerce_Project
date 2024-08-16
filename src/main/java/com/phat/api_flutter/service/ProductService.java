@@ -64,7 +64,7 @@ public class ProductService implements IProductService {
                 product.getColours(),
                 product.getImage(),
                 product.getNumberOfReviews(),
-                product.getCategory().get_id(),
+                product.getCategory().getId(),
                 product.getGenderAgeCategory(),
                 product.getCountInStock(),
                 product.getDateAdded()
