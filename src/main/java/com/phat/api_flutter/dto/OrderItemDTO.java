@@ -6,9 +6,13 @@ import lombok.Data;
 @Data
 public class OrderItemDTO {
     private String id;
+    private String product;
     private String productName;
     private String productImage;
-
+    private double productPrice;
+    private int quantity;
+    private String selectedSize;
+    private String selectedColour;
     // Constructor
     public OrderItemDTO(OrderItem orderItem) {
         this.id = orderItem.getId();

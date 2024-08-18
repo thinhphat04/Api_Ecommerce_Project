@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/orders/")
@@ -133,7 +134,38 @@ public class OrderController {
             if(order == null) {
                 return ResponseEntity.status(404).body("Order not found");
             }
-            return ResponseEntity.ok(order);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("id", order.getId());
+            // Convert orderItems
+            List<Map<String, Object>> orderItemsList = new ArrayList<>();
+            for (OrderItem item : order.getOrderItems()) {
+                Map<String, Object> orderItemMap = new LinkedHashMap<>();
+                orderItemMap.put("id", item.getId());
+                orderItemMap.put("product", item.getProduct().getId());
+                orderItemMap.put("productName", item.getProductName());
+                orderItemMap.put("productImage", item.getProductImage());
+                orderItemMap.put("productPrice", item.getProductPrice());
+                orderItemMap.put("quantity", item.getQuantity());
+                orderItemMap.put("selectedSize", item.getSelectedSize());
+                orderItemMap.put("selectedColour", item.getSelectedColour());
+                orderItemsList.add(orderItemMap);
+            }
+            response.put("orderItems", orderItemsList);
+
+            response.put("shippingAddress1", order.getShippingAddress1());
+            response.put("city", order.getCity());
+            response.put("postalCode", order.getPostalCode());
+            response.put("country", order.getCountry());
+            response.put("phone", order.getPhone());
+            response.put("paymentId", order.getPaymentId());
+            response.put("status", order.getStatus().name());
+            response.put("statusHistory", order.getStatusHistory().stream().map(Enum::name).collect(Collectors.toList()));
+            response.put("totalPrice", order.getTotalPrice());
+
+            response.put("user", order.getUser().getId());
+            response.put("dateOrdered", order.getDateOrdered());
+
+            return ResponseEntity.ok(response);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(null);

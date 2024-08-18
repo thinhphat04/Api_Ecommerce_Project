@@ -115,17 +115,23 @@ public class AuthController {
             tokenRepository.save(newToken);
 
             user.setPasswordHash(null);  // Remove password before sending response
-            Map<String, Object> response = new HashMap<>();
+            Map<String, Object> response = new LinkedHashMap<>();
             response.put("_id", user.getId());
             response.put("name", user.getName());
             response.put("email", user.getEmail());
             response.put("phone", user.getPhone());
             response.put("isAdmin", user.isAdmin());
             response.put("wishlist", user.getWishlist());
-            response.put("resetPasswordOtp", user.getResetPasswordOtp());
-            response.put("resetPasswordOtpExpires", user.getResetPasswordOtpExpires());
+            response.put("apartment", user.getApartment());
+            response.put("city", user.getCity());
+            response.put("country", user.getCountry());
+            response.put("postalCode", user.getPostalCode());
+            response.put("street", user.getStreet());
             response.put("accessToken", accessToken);
             response.put("refreshToken", refreshToken);
+//            response.put("resetPasswordOtp", user.getResetPasswordOtp());
+//            response.put("resetPasswordOtpExpires", user.getResetPasswordOtpExpires());
+
 
             return ResponseEntity.ok(response);
         } else {
