@@ -65,6 +65,9 @@ public class User {
         this.isAdmin = "ADMIN".equalsIgnoreCase(roles);
     }
 
+    public boolean isAdmin(boolean isAdmin) {
+        return this.isAdmin;
+    }
 
 
 }

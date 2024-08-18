@@ -1,18 +1,21 @@
 package com.phat.api_flutter.controllers;
 
 
+import com.phat.api_flutter.dto.CartProductDto;
 import com.phat.api_flutter.dto.CategoryDTO;
 import com.phat.api_flutter.dto.DeletedImagesDTO;
-import com.phat.api_flutter.models.Category;
-import com.phat.api_flutter.models.Order;
-import com.phat.api_flutter.models.Product;
-import com.phat.api_flutter.models.User;
+import com.phat.api_flutter.models.*;
+import com.phat.api_flutter.service.CartService;
+import com.phat.api_flutter.service.OrderItemService;
+import com.phat.api_flutter.service.TokenService;
+import com.phat.api_flutter.service.UserServiceAdmin;
 import com.phat.api_flutter.service.impl.*;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,11 +31,16 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/admin")
 public class AdminController {
 
+    //    private final OrderItemService orderItemService;
+//    private final CartService cartService;
+    private final TokenService tokenService;
     ICategoryService categoryService;
     IProductService productService;
     IUserServiceAdmin userService;
     IOrderService orderService;
     IReviewService reviewService;
+    ICartService cartService;
+    IOrderItemSerVice orderItemService;
     private MediaHelper mediaHelper;
 
     //User
@@ -42,12 +50,22 @@ public class AdminController {
                            IProductService productService,
                            IUserServiceAdmin userService,
                            IReviewService reviewService,
-                           MediaHelper mediaHelper) {
+                           IOrderService orderService,
+                           MediaHelper mediaHelper,
+                           IOrderItemSerVice orderItemService,
+                           ICartService cartService,
+                           IUserServiceAdmin userServiceAdmin,
+                           TokenService tokenService) {
         this.categoryService = categoryService;
         this.productService = productService;
         this.userService = userService;
         this.reviewService = reviewService;
+        this.orderService = orderService;
         this.mediaHelper = mediaHelper;
+        this.orderItemService = orderItemService;
+        this.cartService = cartService;
+        this.userService = userServiceAdmin;
+        this.tokenService = tokenService;
     }
 
     @GetMapping("/users/count")
@@ -372,7 +390,7 @@ public class AdminController {
             }
 
             // Delete associated reviews
-            if(product.getReviews() != null) {
+            if (product.getReviews() != null) {
                 product.getReviews().forEach(reviewId -> reviewService.deleteReview(reviewId));
             }
             // Delete the product
@@ -394,10 +412,176 @@ public class AdminController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(Map.of("message", "Could not count products"));
             }
-            return ResponseEntity.ok(productCount);
+            HashMap<String, Long> map = new HashMap<>();
+            map.put("productCount", productCount);
+            return ResponseEntity.ok(map);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", e.getMessage()));
         }
+    }
+
+    //Order
+    @GetMapping("/orders")
+    public ResponseEntity<?> getOrders() {
+        try {
+            List<Order> orders = orderService.ShowAllOrder();
+            if (orders == null || orders.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No orders found");
+            }
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    //Order Count
+    @GetMapping("/orders/count")
+    public ResponseEntity<?> getOrderssCount() {
+        try {
+            long orderCount = orderService.orderCount();
+            if (orderCount < 0) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("message", "Could not count products"));
+            }
+            HashMap<String, Long> map = new HashMap<>();
+            map.put("count", orderCount);
+            return ResponseEntity.ok(map);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/orders/{id}")
+    public ResponseEntity<?> changeOrderStatus(@PathVariable String id, @RequestBody Map<String, Order.Status> requestBody) {
+        try {
+            Order.Status newStatus = requestBody.get("status");
+            Order order = orderService.getOrderById(id);
+
+            if (order == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Order not found"));
+            }
+
+            // Define valid status transitions
+            Map<String, List<String>> statusTransitions = Map.of(
+                    "pending", Arrays.asList("processed", "cancelled", "expired"),
+                    "processed", Arrays.asList("shipped", "cancelled", "on_hold"),
+                    "shipped", Arrays.asList("out_for_delivery", "cancelled", "on_hold"),
+                    "out_for_delivery", Arrays.asList("delivered", "cancelled"),
+                    "on_hold", Arrays.asList("cancelled", "shipped", "out_for_delivery")
+                    // No further transitions for "cancelled", "expired", or "delivered"
+            );
+
+            // Check if the new status is valid and allowed
+            if (!order.getStatus().equals(newStatus) &&
+                    statusTransitions.containsKey(order.getStatus().toString()) &&
+                    statusTransitions.get(order.getStatus().toString()).contains(newStatus.toString())) {
+
+                // Add the current status to the status history if it's not already there
+                if (!order.getStatusHistory().contains(newStatus)) {
+                    order.getStatusHistory().add(newStatus);
+                }
+
+                // Update the order status
+                order.setStatus(newStatus);
+
+                // Save the updated order
+                Order updatedOrder = orderService.UpdateOrder(order);
+
+                return ResponseEntity.ok(updatedOrder);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        Map.of(
+                                "message", String.format("Invalid status update. Status cannot go directly from %s to %s", order.getStatus(), newStatus),
+                                "possibleStatuses", statusTransitions.get(order.getStatus())
+                        )
+                );
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("type", e.getClass().getSimpleName(), "message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/orders/{id}")
+    public ResponseEntity<?> deleteOrder(@PathVariable String id) {
+        try {
+            Order order = orderService.getOrderById(id);
+            if (order == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Order not found"));
+            }
+
+            for (OrderItem orderItem : order.getOrderItems()) {
+                orderItemService.deleteOrderItem(orderItem.getId());
+            }
+            boolean result = orderService.deleteOrderById(id);
+            if (result) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/users/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteUser(@PathVariable String id) {
+        try {
+            //Tim kiếm User theo Id
+            User user = userService.findById(id);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+            }
+            //Lay danh sach order cua User
+            List<Order> orders = orderService.findByUserId(id);
+            //tao danh sach orderItemIds ben trong danh sach Order và luu vao 1 mang
+            List<String> orderItemIds = new ArrayList<>();
+            if (orders != null) {
+                for (Order order : orders) {
+                    for (OrderItem orderItem : order.getOrderItems()) {
+                        orderItemIds.add(orderItem.getId());
+                    }
+                }
+            }
+            //Lay danh sach CartProductDTO cua User
+            List<CartProductDto> cartProductDtos = cartService.getUserCart(id);
+
+            //Xoa CartProduct cua User
+            for (CartProductDto cartProductDto : cartProductDtos) {
+                cartService.removeCartProduct(id, cartProductDto.getId());
+            }
+
+            //Xoa OrderItem cua tung Order
+            for (String orderItemId : orderItemIds) {
+                orderItemService.deleteOrderItem(orderItemId);
+            }
+            if(orders != null) {
+                //Xoa Order cua User
+                for (Order order : orders) {
+                    orderService.deleteOrderById(order.getId());
+                }
+            }
+            //Xoa Token
+            Optional<Token> token = tokenService.findById(id);
+            if(token.isPresent()){
+                tokenService.deleteToken(token.get().getId());
+            }
+
+            //Cap nhat tat ca cac Cart da bi xoa ma tham chieu den model User
+            user = userService.removeCartItems(id, user.getCart());
+
+            //Xoa User
+            user = userService.deleteById(id);
+            if (user != null) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", e.getMessage()));
+        }
+
     }
 }

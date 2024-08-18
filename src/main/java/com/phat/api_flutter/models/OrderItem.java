@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "orderItem")
 public class OrderItem {
@@ -25,4 +24,14 @@ public class OrderItem {
     private int quantity = 1;
     private String selectedSize;
     private String selectedColour;
+
+    public OrderItem( Product product, String productName, String productImage, double productPrice, int quantity, String selectedSize, String selectedColour) {
+        this.product = product;
+        this.productName = productName;
+        this.productImage = productImage;
+        this.productPrice = productPrice;
+        this.quantity = quantity;
+        this.selectedSize = selectedSize;
+        this.selectedColour = selectedColour;
+    }
 }

@@ -32,6 +32,9 @@ public class TokenService {
     public Optional<Token> findByUserId(String userId) {
         return tokenRepository.findByUserId(userId);
     }
+    public Optional<Token> findById(String id) {
+        return tokenRepository.findById(id);
+    }
 
     public Token saveToken(Token token) {
         return tokenRepository.save(token);

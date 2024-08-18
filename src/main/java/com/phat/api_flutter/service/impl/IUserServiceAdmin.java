@@ -6,7 +6,13 @@ import java.util.List;
 
 public interface IUserServiceAdmin {
 
-    public long getUsersCount();
+     long getUsersCount();
 
-    public User findById(String id);
+     User findById(String id);
+
+     User updateUser(User user);
+
+     User removeCartItems(String userId, List<String> itemsToRemove);
+
+     User deleteById(String id);
 }

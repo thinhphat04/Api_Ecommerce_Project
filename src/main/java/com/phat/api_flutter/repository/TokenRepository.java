@@ -8,5 +8,6 @@ import java.util.Optional;
 public interface TokenRepository extends MongoRepository<Token, String> {
     Optional<Token> findByAccessToken(String accessToken);
     Optional<Token> findByUserId(String userId);
+    Optional<Token> findById(String id);
 void deleteByUserId(String userId);
 }

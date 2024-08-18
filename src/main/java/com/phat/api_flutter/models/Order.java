@@ -28,8 +28,8 @@ public class Order {
     private String country;
     private String phone;
     private String paymentId;
-    private Status status = Status.PENDING;
-    private List<Status> statusHistory = List.of(Status.PENDING);
+    private Status status = Status.pending;
+    private List<Status> statusHistory = List.of(Status.pending);
     private double totalPrice;
 
     @DBRef
@@ -37,6 +37,8 @@ public class Order {
     private Date dateOrdered = new Date();
 
     public enum Status {
-        PENDING, PROCESSED, SHIPPED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, ON_HOLD, EXPIRED
+        pending, processed, shipped, out_for_delivery, delivered, cancelled, on_hold, expired
     }
+
+
 }

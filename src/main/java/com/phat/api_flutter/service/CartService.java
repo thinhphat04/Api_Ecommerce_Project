@@ -170,6 +170,17 @@ public class CartService implements ICartService {
         cartProductRepository.delete(cartProduct);
     }
 
+    @Override
+    public CartProduct findById(String cartProductId) {
+        return cartProductRepository.findById(cartProductId)
+                .orElseThrow(() -> new RuntimeException("Cart Product not found"));
+    }
+
+    @Override
+    public void deleteCartProduct(CartProduct cartProduct) {
+         cartProductRepository.delete(cartProduct);
+    }
+
     private User findUserById(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
