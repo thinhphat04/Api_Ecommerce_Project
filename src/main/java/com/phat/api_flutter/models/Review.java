@@ -34,4 +34,7 @@ public class Review {
     private LocalDateTime date ;
 
     private int __v;
+
+    @DBRef
+    private Product product;
 }
