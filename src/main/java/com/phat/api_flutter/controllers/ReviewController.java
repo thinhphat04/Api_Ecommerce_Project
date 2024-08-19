@@ -10,9 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -37,7 +35,7 @@ public class ReviewController {
             Product product = productService.getProductById(productId)
                     .orElseThrow(() -> new RuntimeException("Product not found"));
 
-            product.getReviews().add(review.getId());
+
             productService.updateProduct(product);
 
             return ResponseEntity.status(HttpStatus.CREATED)

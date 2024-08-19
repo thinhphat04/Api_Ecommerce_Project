@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Service
 public class ReviewService implements IReviewService {
@@ -55,7 +56,13 @@ public class ReviewService implements IReviewService {
 
         review = reviewRepository.save(review);
 
+        if (product.getReviews() == null) {
+            product.setReviews(new ArrayList<>());
+        }
+
+// Thêm reviewId vào danh sách reviews
         product.getReviews().add(review.getId());
+
         productRepository.save(product);
 
         return review;

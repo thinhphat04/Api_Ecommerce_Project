@@ -1,5 +1,6 @@
 package com.phat.api_flutter.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,6 +44,7 @@ public class User {
     private String country;
 
     private String phone;
+
 
    private boolean isAdmin;
 
