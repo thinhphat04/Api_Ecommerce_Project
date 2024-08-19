@@ -1,5 +1,6 @@
 package com.phat.api_flutter.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,7 +44,7 @@ public class User {
     private String country;
 
     private String phone;
-
+    @JsonProperty("isAdmin")
    private boolean isAdmin;
 
     //private String roles;
